@@ -1,15 +1,16 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 using namespace std;
 
-// Definisi struct KTP
 struct KTP {
     string nama;
     string alamat;
     string nomorKTP;
 };
 
-// Deklarasi fungsi
+void simpanData(KTP data[], int jumlahData);
+void bacaData(KTP data[], int &jumlahData);
 void tambahData(KTP data[], int &jumlahData);
 void cariData(KTP data[], int jumlahData);
 void tampilkanData(KTP data[], int jumlahData);
@@ -20,6 +21,8 @@ int main() {
     KTP data[MAX_DATA];
     int jumlahData = 0;
     int pilihan;
+
+    bacaData(data, jumlahData);
 
     do {
         cout << "\n=== Menu Data KTP Penduduk ===" << endl;
@@ -34,6 +37,7 @@ int main() {
         switch (pilihan) {
             case 1:
                 tambahData(data, jumlahData);
+                simpanData(data, jumlahData);
                 break;
             case 2:
                 cariData(data, jumlahData);
@@ -43,6 +47,7 @@ int main() {
                 break;
             case 4:
                 hapusData(data, jumlahData);
+                simpanData(data, jumlahData);
                 break;
             case 5:
                 cout << "Terima kasih!" << endl;
@@ -55,6 +60,44 @@ int main() {
     } while (pilihan != 5);
 
     return 0;
+}
+
+void simpanData(KTP data[], int jumlahData) {
+    ofstream file("data_ktp.txt");
+    if (!file.is_open()) {
+        cout << "Gagal membuka file untuk menyimpan data!" << endl;
+        return;
+    }
+
+    for (int i = 0; i < jumlahData; i++) {
+        file << data[i].nama << "|" << data[i].alamat << "|" << data[i].nomorKTP << "\n";
+    }
+
+    file.close();
+    cout << "✅ Data berhasil disimpan ke file!" << endl;
+}
+
+void bacaData(KTP data[], int &jumlahData) {
+    ifstream file("data_ktp.txt");
+    if (!file.is_open()) {
+        cout << "(Belum ada file data, akan dibuat baru nanti.)" << endl;
+        return;
+    }
+
+    jumlahData = 0;
+    string line;
+    while (getline(file, line)) {
+        size_t pos1 = line.find('|');
+        size_t pos2 = line.rfind('|');
+        if (pos1 != string::npos && pos2 != string::npos && pos1 != pos2) {
+            data[jumlahData].nama = line.substr(0, pos1);
+            data[jumlahData].alamat = line.substr(pos1 + 1, pos2 - pos1 - 1);
+            data[jumlahData].nomorKTP = line.substr(pos2 + 1);
+            jumlahData++;
+        }
+    }
+    file.close();
+    cout << "📂 Data berhasil dibaca dari file (" << jumlahData << " data)." << endl;
 }
 
 void tambahData(KTP data[], int &jumlahData) {
@@ -73,7 +116,7 @@ void tambahData(KTP data[], int &jumlahData) {
     cin >> data[jumlahData].nomorKTP;
 
     jumlahData++;
-    cout << "Data berhasil ditambahkan!" << endl;
+    cout << "✅ Data berhasil ditambahkan!" << endl;
 }
 
 void cariData(KTP data[], int jumlahData) {
@@ -84,7 +127,7 @@ void cariData(KTP data[], int jumlahData) {
     bool ditemukan = false;
     for (int i = 0; i < jumlahData; i++) {
         if (data[i].nomorKTP == nomorKTP) {
-            cout << "Data ditemukan:" << endl;
+            cout << "🔍 Data ditemukan:" << endl;
             cout << "Nama: " << data[i].nama << endl;
             cout << "Alamat: " << data[i].alamat << endl;
             cout << "Nomor KTP: " << data[i].nomorKTP << endl;
@@ -94,7 +137,7 @@ void cariData(KTP data[], int jumlahData) {
     }
 
     if (!ditemukan) {
-        cout << "Data tidak ditemukan!" << endl;
+        cout << "⚠️ Data tidak ditemukan!" << endl;
     }
 }
 
@@ -104,7 +147,7 @@ void tampilkanData(KTP data[], int jumlahData) {
         return;
     }
 
-    cout << "\nData KTP Penduduk:" << endl;
+    cout << "\n📋 Data KTP Penduduk:" << endl;
     for (int i = 0; i < jumlahData; i++) {
         cout << "Data ke-" << i + 1 << endl;
         cout << "Nama: " << data[i].nama << endl;
@@ -128,14 +171,13 @@ void hapusData(KTP data[], int &jumlahData) {
     }
 
     if (indeks == -1) {
-        cout << "Data tidak ditemukan!" << endl;
+        cout << "⚠️ Data tidak ditemukan!" << endl;
         return;
     }
 
-    // Menggeser data setelah indeks yang dihapus ke kiri
     for (int i = indeks; i < jumlahData - 1; i++) {
         data[i] = data[i + 1];
     }
     jumlahData--;
-    cout << "Data berhasil dihapus!" << endl;
+    cout << "🗑️ Data berhasil dihapus!" << endl;
 }
